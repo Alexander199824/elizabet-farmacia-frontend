@@ -1,7 +1,7 @@
 /**
  * @author Alexander Echeverria
  * @file Sidebar.jsx
- * @description Sidebar del dashboard con opción de auditoría
+ * @description Sidebar del dashboard con todas las opciones
  * @location /src/components/dashboard/Sidebar.jsx
  */
 
@@ -9,7 +9,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   FiHome, FiPackage, FiShoppingCart, FiUsers, FiTruck, 
   FiBarChart2, FiSettings, FiLogOut, FiFileText, FiBox,
-  FiDollarSign, FiCalendar, FiUser, FiActivity
+  FiDollarSign, FiCalendar, FiUser, FiActivity, FiLayers
 } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 import { FARMACIA_INFO, USER_ROLES } from '../../utils/constants';
@@ -32,7 +32,8 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       { path: '/dashboard/ventas', icon: FiShoppingCart, label: 'Ventas' },
       { path: '/dashboard/usuarios', icon: FiUsers, label: 'Usuarios' },
       { path: '/dashboard/inventario', icon: FiBox, label: 'Inventario' },
-      { path: '/dashboard/auditoria', icon: FiActivity, label: 'Auditoría' }, // ✅ NUEVA OPCIÓN
+      { path: '/dashboard/proveedores', icon: FiLayers, label: 'Proveedores' }, // ✅ NUEVA OPCIÓN
+      { path: '/dashboard/auditoria', icon: FiActivity, label: 'Auditoría' },
       { path: '/dashboard/reportes', icon: FiBarChart2, label: 'Reportes' },
       { path: '/dashboard/configuracion', icon: FiSettings, label: 'Configuración' },
     ],
@@ -46,6 +47,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     [USER_ROLES.BODEGA]: [
       { path: '/dashboard', icon: FiHome, label: 'Dashboard' },
       { path: '/dashboard/inventario', icon: FiBox, label: 'Inventario' },
+      { path: '/dashboard/proveedores', icon: FiLayers, label: 'Proveedores' }, // ✅ TAMBIÉN PARA BODEGA
       { path: '/dashboard/lotes', icon: FiPackage, label: 'Lotes' },
       { path: '/dashboard/entradas', icon: FiDollarSign, label: 'Entradas' },
       { path: '/dashboard/alertas', icon: FiCalendar, label: 'Alertas Stock' },
@@ -60,7 +62,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       { path: '/dashboard', icon: FiHome, label: 'Mi Cuenta' },
       { path: '/dashboard/pedidos', icon: FiShoppingCart, label: 'Mis Pedidos' },
       { path: '/dashboard/perfil', icon: FiUser, label: 'Mi Perfil' },
-      { path: '/dashboard/facturas', icon: FiFileText, label: 'Mis Facturas' },
+      { path: '/dashboard/facturas', icon: FiFileText, label: 'Mis Recibos' },
     ],
   };
 
