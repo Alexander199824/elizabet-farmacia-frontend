@@ -1,7 +1,7 @@
 /**
  * @author Alexander Echeverria
  * @file Sidebar.jsx
- * @description Sidebar del dashboard
+ * @description Sidebar del dashboard con opción de auditoría
  * @location /src/components/dashboard/Sidebar.jsx
  */
 
@@ -9,7 +9,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   FiHome, FiPackage, FiShoppingCart, FiUsers, FiTruck, 
   FiBarChart2, FiSettings, FiLogOut, FiFileText, FiBox,
-  FiDollarSign, FiCalendar, FiUser
+  FiDollarSign, FiCalendar, FiUser, FiActivity
 } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 import { FARMACIA_INFO, USER_ROLES } from '../../utils/constants';
@@ -32,6 +32,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       { path: '/dashboard/ventas', icon: FiShoppingCart, label: 'Ventas' },
       { path: '/dashboard/usuarios', icon: FiUsers, label: 'Usuarios' },
       { path: '/dashboard/inventario', icon: FiBox, label: 'Inventario' },
+      { path: '/dashboard/auditoria', icon: FiActivity, label: 'Auditoría' }, // ✅ NUEVA OPCIÓN
       { path: '/dashboard/reportes', icon: FiBarChart2, label: 'Reportes' },
       { path: '/dashboard/configuracion', icon: FiSettings, label: 'Configuración' },
     ],
