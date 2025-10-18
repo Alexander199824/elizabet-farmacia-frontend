@@ -2,6 +2,7 @@
  * @author Alexander Echeverria
  * @file ReportesPage.jsx
  * @description Dashboard completo de reportes con análisis avanzado
+ * ✅ COLORES MEJORADOS - Mejor contraste y visibilidad
  * @location /src/pages/admin/ReportesPage.jsx
  */
 
@@ -28,16 +29,14 @@ const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'
 
 const ReportesPage = () => {
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('overview'); // overview, ventas, inventario, movimientos
-  const [activeSubTab, setActiveSubTab] = useState('diario'); // Para sub-tabs de ventas
+  const [activeTab, setActiveTab] = useState('overview');
+  const [activeSubTab, setActiveSubTab] = useState('diario');
   
-  // Filtros de fecha
   const [dateRange, setDateRange] = useState({
     startDate: new Date(new Date().setMonth(new Date().getMonth() - 1)).toISOString().split('T')[0],
     endDate: new Date().toISOString().split('T')[0]
   });
 
-  // Estados para diferentes datos
   const [dashboardData, setDashboardData] = useState(null);
   const [salesData, setSalesData] = useState(null);
   const [inventoryData, setInventoryData] = useState(null);
@@ -80,24 +79,19 @@ const ReportesPage = () => {
 
   const fetchSalesReports = async () => {
     try {
-      // Ventas por día
       const dailySales = await reportService.getSalesReport({
         startDate: dateRange.startDate,
         endDate: dateRange.endDate,
         groupBy: 'day'
       });
 
-      // Ventas por hora
       const hourlySales = await reportService.getSalesReport({
         startDate: dateRange.startDate,
         endDate: dateRange.endDate,
         groupBy: 'hour'
       });
 
-      // Top productos
       const topProds = await reportService.getTopProducts({ limit: 10 });
-
-      // Ventas por categoría
       const catSales = await reportService.getSalesByCategory(
         dateRange.startDate,
         dateRange.endDate
@@ -114,13 +108,8 @@ const ReportesPage = () => {
 
   const fetchInventoryReports = async () => {
     try {
-      // Reporte de inventario general
       const invReport = await reportService.getInventoryReport();
-
-      // Productos con stock bajo
       const lowStock = await reportService.getLowStockReport();
-
-      // Productos próximos a vencer
       const expiring = await reportService.getExpirationReport(30);
 
       setInventoryData(invReport);
@@ -241,7 +230,6 @@ const ReportesPage = () => {
         <div className="flex flex-wrap items-center gap-4">
           <FiCalendar className="text-primary-500 text-xl" />
           
-          {/* Quick presets */}
           <div className="flex flex-wrap gap-2">
             {['hoy', 'semana', 'mes', 'trimestre', 'semestre', 'año'].map((period) => (
               <button
@@ -254,7 +242,6 @@ const ReportesPage = () => {
             ))}
           </div>
 
-          {/* Custom date range */}
           <div className="flex items-center space-x-3 ml-auto">
             <div>
               <label className="text-xs text-neutral-600 block mb-1">Desde</label>
@@ -312,19 +299,20 @@ const ReportesPage = () => {
             <p className="text-sm opacity-80 mt-1">Ticket Promedio</p>
           </div>
 
-          <div className="bg-gradient-to-br from-warning-500 to-warning-600 rounded-lg shadow p-6 text-white">
-            <div className="flex items-center justify-between mb-2">
-              <FiPackage className="text-3xl opacity-80" />
-              <FiAlertCircle className="text-2xl" />
-            </div>
-            <p className="text-3xl font-bold">
-              {dashboardData.inventory?.lowStock || 0}
-            </p>
-            <p className="text-sm opacity-80 mt-1">Stock Bajo</p>
-            <p className="text-xs opacity-70 mt-2">
-              {dashboardData.inventory?.totalProducts || 0} productos totales
-            </p>
-          </div>
+          {/* 3. STOCK BAJO - NARANJA/AMARILLO */}
+    <div className="bg-gradient-to-br from-yellow-500 to-orange-500 rounded-lg shadow-lg p-6 text-white">
+      <div className="flex items-center justify-between mb-2">
+        <FiPackage className="text-3xl opacity-80" />
+        <FiAlertCircle className="text-2xl" />
+      </div>
+      <p className="text-3xl font-bold">
+        {dashboardData.inventory?.lowStock || 0}
+      </p>
+      <p className="text-sm opacity-90 mt-1 font-medium">Stock Bajo</p>
+      <p className="text-xs opacity-75 mt-2">
+        {dashboardData.inventory?.totalProducts || 0} productos totales
+      </p>
+    </div>
 
           <div className="bg-gradient-to-br from-danger-500 to-danger-600 rounded-lg shadow p-6 text-white">
             <div className="flex items-center justify-between mb-2">
@@ -530,7 +518,6 @@ const ReportesPage = () => {
           {/* VENTAS TAB */}
           {activeTab === 'ventas' && (
             <div className="space-y-6">
-              {/* Sub-tabs para ventas */}
               <div className="flex space-x-2 border-b pb-2">
                 {['diario', 'hora', 'categoria', 'productos'].map((subTab) => (
                   <button
@@ -547,7 +534,6 @@ const ReportesPage = () => {
                 ))}
               </div>
 
-              {/* Ventas Diarias */}
               {activeSubTab === 'diario' && salesData && (
                 <div className="bg-neutral-50 rounded-lg p-6">
                   <h3 className="text-lg font-semibold mb-4">Ventas Diarias</h3>
@@ -565,7 +551,6 @@ const ReportesPage = () => {
                 </div>
               )}
 
-              {/* Ventas por Hora */}
               {activeSubTab === 'hora' && hourlyData.length > 0 && (
                 <div className="bg-neutral-50 rounded-lg p-6">
                   <h3 className="text-lg font-semibold mb-4">
@@ -596,7 +581,6 @@ const ReportesPage = () => {
                 </div>
               )}
 
-              {/* Ventas por Categoría */}
               {activeSubTab === 'categoria' && categoryData.length > 0 && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <div className="bg-neutral-50 rounded-lg p-6">
@@ -648,7 +632,6 @@ const ReportesPage = () => {
                 </div>
               )}
 
-              {/* Top Productos */}
               {activeSubTab === 'productos' && topProducts.length > 0 && (
                 <div className="bg-neutral-50 rounded-lg p-6">
                   <h3 className="text-lg font-semibold mb-4">
@@ -674,29 +657,44 @@ const ReportesPage = () => {
             <div className="space-y-6">
               <h2 className="text-2xl font-bold mb-4">Análisis de Inventario</h2>
 
-              {/* Stats de Inventario */}
+              {/* ✅ STATS DE INVENTARIO CON COLORES MEJORADOS */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="bg-primary-50 rounded-lg p-4">
-                  <p className="text-sm text-neutral-600">Valor Total</p>
-                  <p className="text-2xl font-bold text-primary-600">
+                <div className="bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg shadow p-4 text-white">
+                  <div className="flex items-center justify-between mb-2">
+                    <FiDollarSign className="text-2xl opacity-80" />
+                  </div>
+                  <p className="text-sm opacity-80">Valor Total</p>
+                  <p className="text-2xl font-bold mt-1">
                     {formatCurrency(inventoryData.totalValue || 0)}
                   </p>
                 </div>
-                <div className="bg-warning-50 rounded-lg p-4">
-                  <p className="text-sm text-neutral-600">Stock Bajo</p>
-                  <p className="text-2xl font-bold text-warning-600">
+
+                <div className="bg-gradient-to-br from-warning-500 to-warning-600 rounded-lg shadow p-4 text-white">
+                  <div className="flex items-center justify-between mb-2">
+                    <FiAlertCircle className="text-2xl opacity-80" />
+                  </div>
+                  <p className="text-sm opacity-80">Stock Bajo</p>
+                  <p className="text-2xl font-bold mt-1">
                     {inventoryData.lowStock || 0}
                   </p>
                 </div>
-                <div className="bg-danger-50 rounded-lg p-4">
-                  <p className="text-sm text-neutral-600">Agotados</p>
-                  <p className="text-2xl font-bold text-danger-600">
+
+                <div className="bg-gradient-to-br from-danger-500 to-danger-600 rounded-lg shadow p-4 text-white">
+                  <div className="flex items-center justify-between mb-2">
+                    <FiPackage className="text-2xl opacity-80" />
+                  </div>
+                  <p className="text-sm opacity-80">Agotados</p>
+                  <p className="text-2xl font-bold mt-1">
                     {inventoryData.outOfStock || 0}
                   </p>
                 </div>
-                <div className="bg-success-50 rounded-lg p-4">
-                  <p className="text-sm text-neutral-600">Stock OK</p>
-                  <p className="text-2xl font-bold text-success-600">
+
+                <div className="bg-gradient-to-br from-success-500 to-success-600 rounded-lg shadow p-4 text-white">
+                  <div className="flex items-center justify-between mb-2">
+                    <FiBox className="text-2xl opacity-80" />
+                  </div>
+                  <p className="text-sm opacity-80">Stock OK</p>
+                  <p className="text-2xl font-bold mt-1">
                     {inventoryData.okStock || 0}
                   </p>
                 </div>
@@ -856,26 +854,26 @@ const ReportesPage = () => {
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-success-50 rounded-lg p-6">
-                  <h4 className="font-semibold text-success-800 mb-3">
-                    📥 Entradas Totales
-                  </h4>
-                  <p className="text-3xl font-bold text-success-600">
+                <div className="bg-gradient-to-br from-success-500 to-success-600 rounded-lg shadow p-6 text-white">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-semibold text-lg">📥 Entradas Totales</h4>
+                  </div>
+                  <p className="text-3xl font-bold mt-2">
                     {movementsData.totalEntries || 0}
                   </p>
-                  <p className="text-sm text-neutral-600 mt-2">
+                  <p className="text-sm opacity-80 mt-2">
                     Unidades ingresadas al inventario
                   </p>
                 </div>
 
-                <div className="bg-danger-50 rounded-lg p-6">
-                  <h4 className="font-semibold text-danger-800 mb-3">
-                    📤 Salidas Totales
-                  </h4>
-                  <p className="text-3xl font-bold text-danger-600">
+                <div className="bg-gradient-to-br from-danger-500 to-danger-600 rounded-lg shadow p-6 text-white">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-semibold text-lg">📤 Salidas Totales</h4>
+                  </div>
+                  <p className="text-3xl font-bold mt-2">
                     {movementsData.totalExits || 0}
                   </p>
-                  <p className="text-sm text-neutral-600 mt-2">
+                  <p className="text-sm opacity-80 mt-2">
                     Unidades vendidas del inventario
                   </p>
                 </div>

@@ -2,6 +2,7 @@
  * @author Alexander Echeverria
  * @file App.jsx
  * @description Componente principal con TODAS las rutas funcionando
+ * ✅ BODEGA puede crear/editar productos y lotes
  * @location /src/App.jsx
  */
 
@@ -35,13 +36,16 @@ import ProductosPage from './pages/admin/ProductosPage';
 import VentasPage from './pages/admin/VentasPage';
 import UsuariosPage from './pages/admin/UsuariosPage';
 import InventarioPage from './pages/admin/InventarioPage';
-import ProveedoresPage from './pages/admin/ProveedoresPage'; // ✅ NUEVO
-import AuditPage from './pages/admin/AuditPage'; // ✅ NUEVO
-import ReportesPage from './pages/admin/ReportesPage'; // ✅ NUEVO
+import ProveedoresPage from './pages/admin/ProveedoresPage';
+import AuditPage from './pages/admin/AuditPage';
+import ReportesPage from './pages/admin/ReportesPage';
 
 // PÁGINAS VENDEDOR
 import ClientesPage from './pages/vendedor/ClientesPage';
-import NuevaVentaPage from './pages/vendedor/NuevaVentaPage'; // ✅ NUEVO
+import NuevaVentaPage from './pages/vendedor/NuevaVentaPage';
+
+// PÁGINAS BODEGA
+import LotesPage from './pages/bodega/LotesPage';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -122,10 +126,11 @@ function AppContent() {
         />
 
         {/* ========== RUTAS DE ADMIN ========== */}
+        {/* ✅ PRODUCTOS: Ahora accesible por ADMIN, VENDEDOR y BODEGA */}
         <Route
           path="/dashboard/productos"
           element={
-            <ProtectedRoute allowedRoles={[USER_ROLES.ADMIN, USER_ROLES.VENDEDOR]}>
+            <ProtectedRoute allowedRoles={[USER_ROLES.ADMIN, USER_ROLES.VENDEDOR, USER_ROLES.BODEGA]}>
               <DashboardLayout>
                 <ProductosPage />
               </DashboardLayout>
@@ -166,7 +171,6 @@ function AppContent() {
           }
         />
 
-        {/* ✅ NUEVA RUTA: Proveedores */}
         <Route
           path="/dashboard/proveedores"
           element={
@@ -178,7 +182,6 @@ function AppContent() {
           }
         />
 
-        {/* ✅ NUEVA RUTA: Auditoría */}
         <Route
           path="/dashboard/auditoria"
           element={
@@ -190,7 +193,6 @@ function AppContent() {
           }
         />
 
-        {/* ✅ RUTA ACTUALIZADA: Reportes */}
         <Route
           path="/dashboard/reportes"
           element={
@@ -217,7 +219,6 @@ function AppContent() {
         />
 
         {/* ========== RUTAS DE VENDEDOR ========== */}
-        {/* ✅ RUTA ACTUALIZADA: Nueva Venta */}
         <Route
           path="/dashboard/nueva-venta"
           element={
@@ -252,15 +253,13 @@ function AppContent() {
         />
 
         {/* ========== RUTAS DE BODEGA ========== */}
+        {/* ✅ LOTES: Accesible por ADMIN y BODEGA */}
         <Route
           path="/dashboard/lotes"
           element={
-            <ProtectedRoute allowedRoles={[USER_ROLES.BODEGA]}>
+            <ProtectedRoute allowedRoles={[USER_ROLES.ADMIN, USER_ROLES.BODEGA]}>
               <DashboardLayout>
-                <div className="p-6">
-                  <h1 className="text-2xl font-bold">Gestión de Lotes</h1>
-                  <p className="text-neutral-600 mt-2">Módulo en desarrollo...</p>
-                </div>
+                <LotesPage />
               </DashboardLayout>
             </ProtectedRoute>
           }

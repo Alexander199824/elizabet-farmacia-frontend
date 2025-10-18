@@ -2,6 +2,7 @@
  * @author Alexander Echeverria
  * @file Sidebar.jsx
  * @description Sidebar del dashboard con todas las opciones
+ * ✅ BODEGA ahora tiene acceso a Productos y Lotes
  * @location /src/components/dashboard/Sidebar.jsx
  */
 
@@ -9,7 +10,8 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   FiHome, FiPackage, FiShoppingCart, FiUsers, FiTruck, 
   FiBarChart2, FiSettings, FiLogOut, FiFileText, FiBox,
-  FiDollarSign, FiCalendar, FiUser, FiActivity, FiLayers
+  FiDollarSign, FiCalendar, FiUser, FiActivity, FiLayers,
+  FiInbox
 } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 import { FARMACIA_INFO, USER_ROLES } from '../../utils/constants';
@@ -32,7 +34,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       { path: '/dashboard/ventas', icon: FiShoppingCart, label: 'Ventas' },
       { path: '/dashboard/usuarios', icon: FiUsers, label: 'Usuarios' },
       { path: '/dashboard/inventario', icon: FiBox, label: 'Inventario' },
-      { path: '/dashboard/proveedores', icon: FiLayers, label: 'Proveedores' }, // ✅ NUEVA OPCIÓN
+      { path: '/dashboard/proveedores', icon: FiLayers, label: 'Proveedores' },
       { path: '/dashboard/auditoria', icon: FiActivity, label: 'Auditoría' },
       { path: '/dashboard/reportes', icon: FiBarChart2, label: 'Reportes' },
       { path: '/dashboard/configuracion', icon: FiSettings, label: 'Configuración' },
@@ -44,11 +46,13 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       { path: '/dashboard/productos', icon: FiPackage, label: 'Productos' },
       { path: '/dashboard/clientes', icon: FiUsers, label: 'Clientes' },
     ],
+    // ✅ MENÚ DE BODEGA MEJORADO
     [USER_ROLES.BODEGA]: [
       { path: '/dashboard', icon: FiHome, label: 'Dashboard' },
+      { path: '/dashboard/productos', icon: FiPackage, label: 'Productos' }, // ✅ NUEVO
+      { path: '/dashboard/lotes', icon: FiInbox, label: 'Lotes' }, // ✅ MEJORADO
       { path: '/dashboard/inventario', icon: FiBox, label: 'Inventario' },
-      { path: '/dashboard/proveedores', icon: FiLayers, label: 'Proveedores' }, // ✅ TAMBIÉN PARA BODEGA
-      { path: '/dashboard/lotes', icon: FiPackage, label: 'Lotes' },
+      { path: '/dashboard/proveedores', icon: FiLayers, label: 'Proveedores' },
       { path: '/dashboard/entradas', icon: FiDollarSign, label: 'Entradas' },
       { path: '/dashboard/alertas', icon: FiCalendar, label: 'Alertas Stock' },
     ],

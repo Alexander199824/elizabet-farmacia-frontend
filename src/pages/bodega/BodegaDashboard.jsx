@@ -2,12 +2,16 @@
  * @author Alexander Echeverria
  * @file BodegaDashboard.jsx
  * @description Dashboard del encargado de bodega con datos reales
+ * ✅ Accesos rápidos a Productos y Lotes
  * @location /src/pages/bodega/BodegaDashboard.jsx
  */
 
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiBox, FiAlertCircle, FiPackage, FiTrendingDown, FiCalendar, FiPlus } from 'react-icons/fi';
+import { 
+  FiBox, FiAlertCircle, FiPackage, FiTrendingDown, 
+  FiCalendar, FiPlus, FiLayers, FiGrid
+} from 'react-icons/fi';
 import StatCard from '../../components/dashboard/StatCard';
 import productService from '../../services/productService';
 import batchService from '../../services/batchService';
@@ -66,7 +70,7 @@ const BodegaDashboard = () => {
             Panel de Bodega
           </h1>
           <p className="text-neutral-600 mt-1">
-            Control de inventario y stock
+            Control de inventario, productos y lotes
           </p>
         </div>
         <button 
@@ -110,6 +114,53 @@ const BodegaDashboard = () => {
         />
       </div>
 
+      {/* ✅ ACCESOS RÁPIDOS MEJORADOS */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <button
+          onClick={() => navigate('/dashboard/productos')}
+          className="p-6 bg-white rounded-xl shadow-card hover:shadow-lg transition-shadow text-left group"
+        >
+          <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary-200 transition-colors">
+            <FiPackage className="text-2xl text-primary-600" />
+          </div>
+          <h3 className="font-semibold text-lg mb-2">Gestionar Productos</h3>
+          <p className="text-sm text-neutral-600">Crear y editar productos</p>
+        </button>
+
+        <button
+          onClick={() => navigate('/dashboard/lotes')}
+          className="p-6 bg-white rounded-xl shadow-card hover:shadow-lg transition-shadow text-left group"
+        >
+          <div className="w-12 h-12 bg-success-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-success-200 transition-colors">
+            <FiGrid className="text-2xl text-success-600" />
+          </div>
+          <h3 className="font-semibold text-lg mb-2">Gestionar Lotes</h3>
+          <p className="text-sm text-neutral-600">Crear y administrar lotes</p>
+        </button>
+
+        <button
+          onClick={() => navigate('/dashboard/inventario')}
+          className="p-6 bg-white rounded-xl shadow-card hover:shadow-lg transition-shadow text-left group"
+        >
+          <div className="w-12 h-12 bg-warning-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-warning-200 transition-colors">
+            <FiBox className="text-2xl text-warning-600" />
+          </div>
+          <h3 className="font-semibold text-lg mb-2">Inventario Completo</h3>
+          <p className="text-sm text-neutral-600">Ver todo el inventario</p>
+        </button>
+
+        <button
+          onClick={() => navigate('/dashboard/proveedores')}
+          className="p-6 bg-white rounded-xl shadow-card hover:shadow-lg transition-shadow text-left group"
+        >
+          <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-purple-200 transition-colors">
+            <FiLayers className="text-2xl text-purple-600" />
+          </div>
+          <h3 className="font-semibold text-lg mb-2">Proveedores</h3>
+          <p className="text-sm text-neutral-600">Gestionar proveedores</p>
+        </button>
+      </div>
+
       {/* Alerts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Low Stock Alert */}
@@ -138,7 +189,7 @@ const BodegaDashboard = () => {
                       </div>
                     </div>
                     <button 
-                      onClick={() => navigate(`/dashboard/productos/${product.id}`)}
+                      onClick={() => navigate(`/dashboard/productos`)}
                       className="text-sm font-medium text-warning-600 hover:text-warning-700 whitespace-nowrap"
                     >
                       Reabastecer
@@ -182,7 +233,7 @@ const BodegaDashboard = () => {
                         </div>
                       </div>
                       <button 
-                        onClick={() => navigate(`/dashboard/lotes/${batch.id}`)}
+                        onClick={() => navigate(`/dashboard/lotes`)}
                         className="text-sm font-medium text-danger-600 hover:text-danger-700 whitespace-nowrap"
                       >
                         Ver detalle
@@ -198,42 +249,6 @@ const BodegaDashboard = () => {
             )}
           </div>
         </div>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <button
-          onClick={() => navigate('/dashboard/entradas')}
-          className="p-6 bg-white rounded-xl shadow-card hover:shadow-lg transition-shadow text-left group"
-        >
-          <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary-200 transition-colors">
-            <FiPlus className="text-2xl text-primary-600" />
-          </div>
-          <h3 className="font-semibold text-lg mb-2">Registrar Entrada</h3>
-          <p className="text-sm text-neutral-600">Nueva entrada de productos</p>
-        </button>
-
-        <button
-          onClick={() => navigate('/dashboard/lotes')}
-          className="p-6 bg-white rounded-xl shadow-card hover:shadow-lg transition-shadow text-left group"
-        >
-          <div className="w-12 h-12 bg-success-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-success-200 transition-colors">
-            <FiPackage className="text-2xl text-success-600" />
-          </div>
-          <h3 className="font-semibold text-lg mb-2">Ver Lotes</h3>
-          <p className="text-sm text-neutral-600">Gestionar lotes de productos</p>
-        </button>
-
-        <button
-          onClick={() => navigate('/dashboard/inventario')}
-          className="p-6 bg-white rounded-xl shadow-card hover:shadow-lg transition-shadow text-left group"
-        >
-          <div className="w-12 h-12 bg-warning-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-warning-200 transition-colors">
-            <FiBox className="text-2xl text-warning-600" />
-          </div>
-          <h3 className="font-semibold text-lg mb-2">Inventario Completo</h3>
-          <p className="text-sm text-neutral-600">Ver todo el inventario</p>
-        </button>
       </div>
     </div>
   );
