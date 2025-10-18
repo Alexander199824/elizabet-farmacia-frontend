@@ -1,7 +1,7 @@
 /**
  * @author Alexander Echeverria
  * @file ClienteDashboard.jsx
- * @description Dashboard del cliente
+ * @description Dashboard del cliente con datos reales
  * @location /src/pages/cliente/ClienteDashboard.jsx
  */
 
@@ -9,6 +9,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiShoppingBag, FiPackage, FiClock, FiCheckCircle, FiFileText } from 'react-icons/fi';
 import StatCard from '../../components/dashboard/StatCard';
+import invoiceService from '../../services/invoiceService';
 import { formatCurrency, formatDate } from '../../utils/helpers';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -17,83 +18,48 @@ const ClienteDashboard = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   
-  const [stats, setStats] = useState({
-    totalOrders: 0,
-    pendingOrders: 0,
-    completedOrders: 0,
-    totalSpent: 0,
-  });
-
+  const [stats, setStats] = useState(null);
   const [recentOrders, setRecentOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchStats();
-    fetchRecentOrders();
-  }, []);
+    if (user) {
+      fetchClientData();
+    }
+  }, [user]);
 
-  const fetchStats = async () => {
+  const fetchClientData = async () => {
     setLoading(true);
     try {
-      // TODO: Llamar a la API de estadísticas del cliente
-      setTimeout(() => {
-        setStats({
-          totalOrders: 15,
-          pendingOrders: 2,
-          completedOrders: 13,
-          totalSpent: 8450.75,
-        });
-        setLoading(false);
-      }, 1000);
-    } catch (error) {
-      console.error('Error fetching stats:', error);
-      toast.error('Error al cargar estadísticas');
-      setLoading(false);
-    }
-  };
+      // Obtener recibos/pedidos del cliente
+      const ordersData = await invoiceService.getAllInvoices({
+        clientId: user.id,
+        page: 1,
+        limit: 10,
+        sortBy: 'invoiceDate',
+        sortOrder: 'desc'
+      });
 
-  const fetchRecentOrders = async () => {
-    try {
-      // TODO: Llamar a la API de pedidos del cliente
-      setTimeout(() => {
-        setRecentOrders([
-          { 
-            id: 1, 
-            orderNumber: 'PED-001234', 
-            date: new Date(), 
-            total: 450.00, 
-            status: 'completada',
-            items: 5
-          },
-          { 
-            id: 2, 
-            orderNumber: 'PED-001235', 
-            date: new Date(), 
-            total: 320.50, 
-            status: 'en_proceso',
-            items: 3
-          },
-          { 
-            id: 3, 
-            orderNumber: 'PED-001236', 
-            date: new Date(), 
-            total: 890.25, 
-            status: 'pendiente',
-            items: 7
-          },
-          { 
-            id: 4, 
-            orderNumber: 'PED-001237', 
-            date: new Date(), 
-            total: 1250.00, 
-            status: 'completada',
-            items: 10
-          },
-        ]);
-      }, 1000);
+      setRecentOrders(ordersData.invoices || []);
+
+      // Calcular estadísticas
+      const allOrders = ordersData.invoices || [];
+      const completedOrders = allOrders.filter(o => o.status === 'completada');
+      const pendingOrders = allOrders.filter(o => o.status === 'pendiente');
+      const totalSpent = allOrders.reduce((sum, order) => sum + order.total, 0);
+
+      setStats({
+        totalOrders: allOrders.length,
+        completedOrders: completedOrders.length,
+        pendingOrders: pendingOrders.length,
+        totalSpent: totalSpent
+      });
+
     } catch (error) {
-      console.error('Error fetching orders:', error);
-      toast.error('Error al cargar pedidos');
+      console.error('Error fetching client data:', error);
+      toast.error('Error al cargar datos');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -103,8 +69,13 @@ const ClienteDashboard = () => {
       en_proceso: { label: 'En Proceso', color: 'primary', icon: FiPackage },
       completada: { label: 'Completada', color: 'success', icon: FiCheckCircle },
       cancelada: { label: 'Cancelada', color: 'danger', icon: FiFileText },
+      anulada: { label: 'Anulada', color: 'danger', icon: FiFileText },
     };
     return statusConfig[status] || statusConfig.pendiente;
+  };
+
+  const handleViewOrder = (orderId) => {
+    navigate(`/dashboard/pedidos/${orderId}`);
   };
 
   if (loading) {
@@ -120,7 +91,7 @@ const ClienteDashboard = () => {
       {/* Welcome Section */}
       <div className="bg-gradient-to-r from-primary-600 to-success-600 rounded-xl p-8 text-white">
         <h1 className="text-3xl font-display font-bold mb-2">
-          Bienvenido, {user?.firstName}!
+          ¡Bienvenido, {user?.firstName}!
         </h1>
         <p className="text-lg opacity-90">
           Gestiona tus pedidos y consulta tu historial de compras
@@ -131,28 +102,28 @@ const ClienteDashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           title="Total Pedidos"
-          value={stats.totalOrders}
+          value={stats?.totalOrders || 0}
           icon={FiShoppingBag}
           color="primary"
           description="Historial completo"
         />
         <StatCard
           title="Pendientes"
-          value={stats.pendingOrders}
+          value={stats?.pendingOrders || 0}
           icon={FiClock}
           color="warning"
           description="En proceso"
         />
         <StatCard
           title="Completados"
-          value={stats.completedOrders}
+          value={stats?.completedOrders || 0}
           icon={FiCheckCircle}
           color="success"
           description="Entregados"
         />
         <StatCard
           title="Total Gastado"
-          value={formatCurrency(stats.totalSpent)}
+          value={formatCurrency(stats?.totalSpent || 0)}
           icon={FiFileText}
           color="primary"
           description="Histórico"
@@ -167,50 +138,56 @@ const ClienteDashboard = () => {
             onClick={() => navigate('/dashboard/pedidos')}
             className="text-sm font-medium text-primary-600 hover:text-primary-700"
           >
-            Ver todos
+            Ver todos →
           </button>
         </div>
         <div className="divide-y">
-          {recentOrders.map((order) => {
-            const statusInfo = getStatusInfo(order.status);
-            const StatusIcon = statusInfo.icon;
-            
-            return (
-              <div key={order.id} className="p-6 hover:bg-neutral-50 transition-colors">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-3 mb-2">
-                      <span className="font-semibold text-lg text-neutral-900">
-                        {order.orderNumber}
-                      </span>
-                      <span className={`badge badge-${statusInfo.color} flex items-center space-x-1`}>
-                        <StatusIcon className="text-sm" />
-                        <span>{statusInfo.label}</span>
-                      </span>
+          {recentOrders.length > 0 ? (
+            recentOrders.map((order) => {
+              const statusInfo = getStatusInfo(order.status);
+              const StatusIcon = statusInfo.icon;
+              
+              return (
+                <div key={order.id} className="p-6 hover:bg-neutral-50 transition-colors">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-3 mb-2">
+                        <span className="font-semibold text-lg text-neutral-900">
+                          Recibo: {order.invoiceNumber}
+                        </span>
+                        <span className={`badge badge-${statusInfo.color} flex items-center space-x-1`}>
+                          <StatusIcon className="text-sm" />
+                          <span>{statusInfo.label}</span>
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-4 text-sm text-neutral-600">
+                        <span>{formatDate(order.invoiceDate)}</span>
+                        <span>•</span>
+                        <span>{order.items?.length || 0} productos</span>
+                      </div>
                     </div>
-                    <div className="flex items-center space-x-4 text-sm text-neutral-600">
-                      <span>{formatDate(order.date)}</span>
-                      <span>•</span>
-                      <span>{order.items} productos</span>
+                    <div className="flex items-center space-x-4">
+                      <div className="text-right">
+                        <p className="text-2xl font-bold text-success-600">
+                          {formatCurrency(order.total)}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => handleViewOrder(order.id)}
+                        className="btn-outline text-sm"
+                      >
+                        Ver Detalle
+                      </button>
                     </div>
-                  </div>
-                  <div className="flex items-center space-x-4">
-                    <div className="text-right">
-                      <p className="text-2xl font-bold text-success-600">
-                        {formatCurrency(order.total)}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => navigate(`/dashboard/pedidos/${order.id}`)}
-                      className="btn-outline text-sm"
-                    >
-                      Ver Detalle
-                    </button>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })
+          ) : (
+            <div className="p-8 text-center text-neutral-500">
+              No tienes pedidos registrados
+            </div>
+          )}
         </div>
       </div>
 
