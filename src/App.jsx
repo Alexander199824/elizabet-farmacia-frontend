@@ -1,7 +1,7 @@
 /**
  * @author Alexander Echeverria
  * @file App.jsx
- * @description Componente principal de la aplicación
+ * @description Componente principal con rutas protegidas por rol
  * @location /src/App.jsx
  */
 
@@ -10,16 +10,25 @@ import { Toaster } from 'react-hot-toast';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
+import { USER_ROLES } from './utils/constants';
 
 // Layouts
 import Navbar from './components/common/Navbar';
 import Footer from './components/common/Footer';
 import CartDrawer from './components/cart/CartDrawer';
+import DashboardLayout from './layouts/DashboardLayout';
 
-// Pages
+// Public Pages
 import Home from './pages/public/Home';
 import Login from './pages/public/Login';
 import Register from './pages/public/Register';
+
+// Dashboard Pages
+import AdminDashboard from './pages/admin/AdminDashboard';
+import VendedorDashboard from './pages/vendedor/VendedorDashboard';
+import BodegaDashboard from './pages/bodega/BodegaDashboard';
+import RepartidorDashboard from './pages/repartidor/RepartidorDashboard';
+import ClienteDashboard from './pages/cliente/ClienteDashboard';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -38,7 +47,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   }
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   return children;
@@ -54,6 +63,21 @@ const PublicLayout = ({ children }) => {
       <CartDrawer />
     </div>
   );
+};
+
+// Dashboard Router - Redirige según el rol
+const DashboardRouter = () => {
+  const { user } = useAuth();
+
+  const dashboardByRole = {
+    [USER_ROLES.ADMIN]: <AdminDashboard />,
+    [USER_ROLES.VENDEDOR]: <VendedorDashboard />,
+    [USER_ROLES.BODEGA]: <BodegaDashboard />,
+    [USER_ROLES.REPARTIDOR]: <RepartidorDashboard />,
+    [USER_ROLES.CLIENTE]: <ClienteDashboard />,
+  };
+
+  return dashboardByRole[user?.role] || <Navigate to="/" replace />;
 };
 
 // Main App Component
@@ -73,17 +97,271 @@ function AppContent() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-        {/* Protected Routes - Dashboard (implementar después) */}
+        {/* Protected Dashboard Routes */}
         <Route
           path="/dashboard"
           element={
             <ProtectedRoute>
-              <PublicLayout>
-                <div className="container mx-auto px-4 py-12">
-                  <h1 className="text-3xl font-bold">Dashboard</h1>
-                  <p className="mt-4">Contenido del dashboard próximamente...</p>
+              <DashboardLayout>
+                <DashboardRouter />
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Admin Routes */}
+        <Route
+          path="/dashboard/productos"
+          element={
+            <ProtectedRoute allowedRoles={[USER_ROLES.ADMIN, USER_ROLES.VENDEDOR]}>
+              <DashboardLayout>
+                <div className="p-6">
+                  <h1 className="text-2xl font-bold">Gestión de Productos</h1>
+                  <p className="text-neutral-600 mt-2">Próximamente...</p>
                 </div>
-              </PublicLayout>
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/ventas"
+          element={
+            <ProtectedRoute allowedRoles={[USER_ROLES.ADMIN, USER_ROLES.VENDEDOR]}>
+              <DashboardLayout>
+                <div className="p-6">
+                  <h1 className="text-2xl font-bold">Gestión de Ventas</h1>
+                  <p className="text-neutral-600 mt-2">Próximamente...</p>
+                </div>
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/usuarios"
+          element={
+            <ProtectedRoute allowedRoles={[USER_ROLES.ADMIN]}>
+              <DashboardLayout>
+                <div className="p-6">
+                  <h1 className="text-2xl font-bold">Gestión de Usuarios</h1>
+                  <p className="text-neutral-600 mt-2">Próximamente...</p>
+                </div>
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/inventario"
+          element={
+            <ProtectedRoute allowedRoles={[USER_ROLES.ADMIN, USER_ROLES.BODEGA]}>
+              <DashboardLayout>
+                <div className="p-6">
+                  <h1 className="text-2xl font-bold">Gestión de Inventario</h1>
+                  <p className="text-neutral-600 mt-2">Próximamente...</p>
+                </div>
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/reportes"
+          element={
+            <ProtectedRoute allowedRoles={[USER_ROLES.ADMIN]}>
+              <DashboardLayout>
+                <div className="p-6">
+                  <h1 className="text-2xl font-bold">Reportes</h1>
+                  <p className="text-neutral-600 mt-2">Próximamente...</p>
+                </div>
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Vendedor Routes */}
+        <Route
+          path="/dashboard/nueva-venta"
+          element={
+            <ProtectedRoute allowedRoles={[USER_ROLES.VENDEDOR]}>
+              <DashboardLayout>
+                <div className="p-6">
+                  <h1 className="text-2xl font-bold">Nueva Venta</h1>
+                  <p className="text-neutral-600 mt-2">Próximamente...</p>
+                </div>
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/mis-ventas"
+          element={
+            <ProtectedRoute allowedRoles={[USER_ROLES.VENDEDOR]}>
+              <DashboardLayout>
+                <div className="p-6">
+                  <h1 className="text-2xl font-bold">Mis Ventas</h1>
+                  <p className="text-neutral-600 mt-2">Próximamente...</p>
+                </div>
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/clientes"
+          element={
+            <ProtectedRoute allowedRoles={[USER_ROLES.VENDEDOR]}>
+              <DashboardLayout>
+                <div className="p-6">
+                  <h1 className="text-2xl font-bold">Clientes</h1>
+                  <p className="text-neutral-600 mt-2">Próximamente...</p>
+                </div>
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Bodega Routes */}
+        <Route
+          path="/dashboard/lotes"
+          element={
+            <ProtectedRoute allowedRoles={[USER_ROLES.BODEGA]}>
+              <DashboardLayout>
+                <div className="p-6">
+                  <h1 className="text-2xl font-bold">Gestión de Lotes</h1>
+                  <p className="text-neutral-600 mt-2">Próximamente...</p>
+                </div>
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/entradas"
+          element={
+            <ProtectedRoute allowedRoles={[USER_ROLES.BODEGA]}>
+              <DashboardLayout>
+                <div className="p-6">
+                  <h1 className="text-2xl font-bold">Entradas de Inventario</h1>
+                  <p className="text-neutral-600 mt-2">Próximamente...</p>
+                </div>
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/alertas"
+          element={
+            <ProtectedRoute allowedRoles={[USER_ROLES.BODEGA]}>
+              <DashboardLayout>
+                <div className="p-6">
+                  <h1 className="text-2xl font-bold">Alertas de Stock</h1>
+                  <p className="text-neutral-600 mt-2">Próximamente...</p>
+                </div>
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Repartidor Routes */}
+        <Route
+          path="/dashboard/entregas"
+          element={
+            <ProtectedRoute allowedRoles={[USER_ROLES.REPARTIDOR]}>
+              <DashboardLayout>
+                <div className="p-6">
+                  <h1 className="text-2xl font-bold">Mis Entregas</h1>
+                  <p className="text-neutral-600 mt-2">Próximamente...</p>
+                </div>
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/ruta"
+          element={
+            <ProtectedRoute allowedRoles={[USER_ROLES.REPARTIDOR]}>
+              <DashboardLayout>
+                <div className="p-6">
+                  <h1 className="text-2xl font-bold">Ruta del Día</h1>
+                  <p className="text-neutral-600 mt-2">Próximamente...</p>
+                </div>
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/historial"
+          element={
+            <ProtectedRoute allowedRoles={[USER_ROLES.REPARTIDOR]}>
+              <DashboardLayout>
+                <div className="p-6">
+                  <h1 className="text-2xl font-bold">Historial de Entregas</h1>
+                  <p className="text-neutral-600 mt-2">Próximamente...</p>
+                </div>
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Cliente Routes */}
+        <Route
+          path="/dashboard/pedidos"
+          element={
+            <ProtectedRoute allowedRoles={[USER_ROLES.CLIENTE]}>
+              <DashboardLayout>
+                <div className="p-6">
+                  <h1 className="text-2xl font-bold">Mis Pedidos</h1>
+                  <p className="text-neutral-600 mt-2">Próximamente...</p>
+                </div>
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/perfil"
+          element={
+            <ProtectedRoute allowedRoles={[USER_ROLES.CLIENTE]}>
+              <DashboardLayout>
+                <div className="p-6">
+                  <h1 className="text-2xl font-bold">Mi Perfil</h1>
+                  <p className="text-neutral-600 mt-2">Próximamente...</p>
+                </div>
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/facturas"
+          element={
+            <ProtectedRoute allowedRoles={[USER_ROLES.CLIENTE]}>
+              <DashboardLayout>
+                <div className="p-6">
+                  <h1 className="text-2xl font-bold">Mis Facturas</h1>
+                  <p className="text-neutral-600 mt-2">Próximamente...</p>
+                </div>
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/configuracion"
+          element={
+            <ProtectedRoute allowedRoles={[USER_ROLES.ADMIN]}>
+              <DashboardLayout>
+                <div className="p-6">
+                  <h1 className="text-2xl font-bold">Configuración</h1>
+                  <p className="text-neutral-600 mt-2">Próximamente...</p>
+                </div>
+              </DashboardLayout>
             </ProtectedRoute>
           }
         />
