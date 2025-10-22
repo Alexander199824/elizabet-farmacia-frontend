@@ -28,6 +28,20 @@ const UsuariosPage = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [stats, setStats] = useState(null);
+  const [showFormModal, setShowFormModal] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    role: '',
+    phone: '',
+    dpi: '',
+    nit: '',
+    address: '',
+    isActive: true
+  });
 
   useEffect(() => {
     fetchUsers();
@@ -97,6 +111,99 @@ const UsuariosPage = () => {
     }
   };
 
+  const handleOpenCreateModal = () => {
+    setEditMode(false);
+    setFormData({
+      firstName: '',
+      lastName: '',
+      email: '',
+      password: '',
+      role: '',
+      phone: '',
+      dpi: '',
+      nit: '',
+      address: '',
+      isActive: true
+    });
+    setShowFormModal(true);
+  };
+
+  const handleOpenEditModal = (user) => {
+    setEditMode(true);
+    setFormData({
+      firstName: user.firstName || '',
+      lastName: user.lastName || '',
+      email: user.email || '',
+      password: '', // No se envía la contraseña en edición
+      role: user.role || '',
+      phone: user.phone || '',
+      dpi: user.dpi || '',
+      nit: user.nit || '',
+      address: user.address || '',
+      isActive: user.isActive !== undefined ? user.isActive : true
+    });
+    setSelectedUser(user);
+    setShowFormModal(true);
+  };
+
+  const handleFormChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      // Validar campos requeridos
+      if (!formData.firstName || !formData.lastName || !formData.email || !formData.role) {
+        toast.error('Por favor completa todos los campos requeridos');
+        return;
+      }
+
+      // Si es creación, validar contraseña
+      if (!editMode && !formData.password) {
+        toast.error('La contraseña es requerida para nuevos usuarios');
+        return;
+      }
+
+      const userData = {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        role: formData.role,
+        phone: formData.phone,
+        dpi: formData.dpi,
+        nit: formData.nit,
+        address: formData.address,
+        isActive: formData.isActive
+      };
+
+      // Solo incluir password si no es edición o si se proporcionó una nueva
+      if (!editMode) {
+        userData.password = formData.password;
+      }
+
+      if (editMode) {
+        await userService.updateUser(selectedUser.id, userData);
+        toast.success('Usuario actualizado exitosamente');
+      } else {
+        await userService.createUser(userData);
+        toast.success('Usuario creado exitosamente');
+      }
+
+      setShowFormModal(false);
+      fetchUsers();
+      fetchStats();
+    } catch (error) {
+      console.error('Error saving user:', error);
+      toast.error(error.message || 'Error al guardar el usuario');
+    }
+  };
+
   const handlePageChange = (newPage) => {
     if (newPage < 1 || newPage > pagination.totalPages) return;
     setPagination(prev => ({ ...prev, page: newPage }));
@@ -125,7 +232,10 @@ const UsuariosPage = () => {
             Administra usuarios del sistema
           </p>
         </div>
-        <button className="btn-primary flex items-center space-x-2">
+        <button
+          onClick={handleOpenCreateModal}
+          className="btn-primary flex items-center space-x-2"
+        >
           <FiPlus />
           <span>Nuevo Usuario</span>
         </button>
@@ -280,6 +390,7 @@ const UsuariosPage = () => {
                           <FiEye />
                         </button>
                         <button
+                          onClick={() => handleOpenEditModal(user)}
                           className="p-2 text-success-600 hover:bg-success-50 rounded"
                           title="Editar"
                         >
@@ -406,6 +517,209 @@ const UsuariosPage = () => {
                 <p className="text-neutral-900">{new Date(selectedUser.createdAt).toLocaleString()}</p>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Formulario Crear/Editar */}
+      {showFormModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b flex items-center justify-between sticky top-0 bg-white z-10">
+              <h3 className="text-xl font-semibold">
+                {editMode ? 'Editar Usuario' : 'Nuevo Usuario'}
+              </h3>
+              <button
+                onClick={() => setShowFormModal(false)}
+                className="text-neutral-400 hover:text-neutral-600"
+              >
+                ✕
+              </button>
+            </div>
+            <form onSubmit={handleSubmit} className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Nombre */}
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    Nombre <span className="text-danger-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="firstName"
+                    value={formData.firstName}
+                    onChange={handleFormChange}
+                    required
+                    className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    placeholder="Juan"
+                  />
+                </div>
+
+                {/* Apellido */}
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    Apellido <span className="text-danger-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="lastName"
+                    value={formData.lastName}
+                    onChange={handleFormChange}
+                    required
+                    className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    placeholder="Pérez"
+                  />
+                </div>
+
+                {/* Email */}
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    Email <span className="text-danger-500">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleFormChange}
+                    required
+                    className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    placeholder="usuario@ejemplo.com"
+                  />
+                </div>
+
+                {/* Contraseña (solo al crear) */}
+                {!editMode && (
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                      Contraseña <span className="text-danger-500">*</span>
+                    </label>
+                    <input
+                      type="password"
+                      name="password"
+                      value={formData.password}
+                      onChange={handleFormChange}
+                      required={!editMode}
+                      className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      placeholder="Mínimo 6 caracteres"
+                      minLength="6"
+                    />
+                  </div>
+                )}
+
+                {/* Rol */}
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    Rol <span className="text-danger-500">*</span>
+                  </label>
+                  <select
+                    name="role"
+                    value={formData.role}
+                    onChange={handleFormChange}
+                    required
+                    className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  >
+                    <option value="">Seleccionar rol</option>
+                    <option value={USER_ROLES.ADMIN}>Administrador</option>
+                    <option value={USER_ROLES.VENDEDOR}>Vendedor</option>
+                    <option value={USER_ROLES.BODEGA}>Bodega</option>
+                    <option value={USER_ROLES.REPARTIDOR}>Repartidor</option>
+                    <option value={USER_ROLES.CLIENTE}>Cliente</option>
+                  </select>
+                </div>
+
+                {/* Teléfono */}
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    Teléfono
+                  </label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleFormChange}
+                    className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    placeholder="1234-5678"
+                  />
+                </div>
+
+                {/* DPI */}
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    DPI
+                  </label>
+                  <input
+                    type="text"
+                    name="dpi"
+                    value={formData.dpi}
+                    onChange={handleFormChange}
+                    className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    placeholder="1234567890101"
+                  />
+                </div>
+
+                {/* NIT */}
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    NIT
+                  </label>
+                  <input
+                    type="text"
+                    name="nit"
+                    value={formData.nit}
+                    onChange={handleFormChange}
+                    className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    placeholder="12345678-9"
+                  />
+                </div>
+
+                {/* Dirección */}
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    Dirección
+                  </label>
+                  <textarea
+                    name="address"
+                    value={formData.address}
+                    onChange={handleFormChange}
+                    rows="2"
+                    className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    placeholder="Dirección completa del usuario..."
+                  />
+                </div>
+
+                {/* Estado Activo */}
+                <div className="md:col-span-2">
+                  <label className="flex items-center space-x-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="isActive"
+                      checked={formData.isActive}
+                      onChange={handleFormChange}
+                      className="rounded text-primary-600 focus:ring-primary-500"
+                    />
+                    <span className="text-sm font-medium text-neutral-700">
+                      Usuario Activo
+                    </span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Botones de Acción */}
+              <div className="flex justify-end space-x-3 mt-6 pt-6 border-t">
+                <button
+                  type="button"
+                  onClick={() => setShowFormModal(false)}
+                  className="px-4 py-2 border border-neutral-300 rounded-lg text-neutral-700 hover:bg-neutral-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="btn-primary px-6 py-2"
+                >
+                  {editMode ? 'Actualizar' : 'Crear'} Usuario
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

@@ -70,6 +70,46 @@ const productService = {
     } catch (error) {
       throw error.response?.data || error.message;
     }
+  },
+
+  // Crear producto
+  createProduct: async (productData) => {
+    try {
+      const response = await api.post('/products', productData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // Actualizar producto
+  updateProduct: async (id, productData) => {
+    try {
+      const response = await api.put(`/products/${id}`, productData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // Eliminar producto
+  deleteProduct: async (id) => {
+    try {
+      const response = await api.delete(`/products/${id}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // Cambiar estado activo/inactivo
+  toggleActive: async (id) => {
+    try {
+      const response = await api.patch(`/products/${id}/toggle-active`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
   }
 };
 
