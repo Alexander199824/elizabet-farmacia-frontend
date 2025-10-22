@@ -7,7 +7,7 @@
 
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FiDollarSign, FiShoppingCart, FiPackage, FiUsers, FiTrendingUp, FiAlertCircle } from 'react-icons/fi';
+import { FiShoppingCart, FiPackage, FiTrendingUp } from 'react-icons/fi';
 import StatCard from '../../components/dashboard/StatCard';
 import statisticsService from '../../services/statisticsService';
 import invoiceService from '../../services/invoiceService';
@@ -90,65 +90,54 @@ const AdminDashboard = () => {
 
   return (
     <div className="space-y-6">
-      {/* Page Title */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-display font-bold text-neutral-900">
-            Dashboard Administrativo
-          </h1>
-          <p className="text-neutral-600 mt-1">
-            Resumen general del sistema
-          </p>
+      {/* Welcome Message */}
+      <div className="bg-gradient-to-r from-primary-500 to-primary-600 rounded-xl shadow-lg p-8 text-white">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-display font-bold mb-2">
+              Bienvenido a tu espacio 👋
+            </h1>
+            <p className="text-primary-100 text-lg">
+              Donde podrás gestionar la farmacia de manera eficiente
+            </p>
+          </div>
+          <button onClick={handleRefresh} className="bg-white text-primary-600 px-4 py-2 rounded-lg font-medium hover:bg-primary-50 transition-colors">
+            🔄 Actualizar
+          </button>
         </div>
-        <button onClick={handleRefresh} className="btn-outline">
-          🔄 Actualizar
-        </button>
       </div>
 
-      {/* Stats Grid */}
+      {/* Stats Grid - Tarjetas Clickeables */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <StatCard
-          title="Ventas Totales"
-          value={formatCurrency(dashboard.sales?.total || 0)}
-          icon={FiDollarSign}
-          color="success"
-          description={`${dashboard.sales?.count || 0} ventas realizadas`}
-        />
-        <StatCard
-          title="Pedidos"
-          value={dashboard.sales?.count || 0}
-          icon={FiShoppingCart}
-          color="primary"
-          description="Total del período"
-        />
-        <StatCard
-          title="Productos"
-          value={dashboard.inventory?.totalProducts || 0}
-          icon={FiPackage}
-          color="primary"
-          description="En catálogo"
-        />
-        <StatCard
-          title="Clientes Únicos"
-          value={dashboard.clients?.unique || 0}
-          icon={FiUsers}
-          color="success"
-          description="Clientes activos"
-        />
-        <StatCard
-          title="Stock Bajo"
-          value={dashboard.inventory?.lowStock || 0}
-          icon={FiAlertCircle}
-          color="warning"
-          description="Requieren atención"
-        />
-        <StatCard
-          title="Próximos a Vencer"
-          value={dashboard.inventory?.expiring || 0}
-          icon={FiTrendingUp}
-          color="danger"
-          description="Próximos 30 días"
-        />
+        <Link to="/dashboard/ventas" className="transform transition-all hover:scale-105">
+          <StatCard
+            title="Total de Ventas"
+            value={dashboard.sales?.count || 0}
+            icon={FiTrendingUp}
+            color="success"
+            description="Ventas realizadas"
+          />
+        </Link>
+        
+        <Link to="/dashboard/ventas" className="transform transition-all hover:scale-105">
+          <StatCard
+            title="Pedidos"
+            value={dashboard.sales?.count || 0}
+            icon={FiShoppingCart}
+            color="primary"
+            description="Total del período"
+          />
+        </Link>
+        
+        <Link to="/dashboard/inventario" className="transform transition-all hover:scale-105">
+          <StatCard
+            title="Productos"
+            value={dashboard.inventory?.totalProducts || 0}
+            icon={FiPackage}
+            color="primary"
+            description="En catálogo"
+          />
+        </Link>
       </div>
 
       {/* Content Grid */}
@@ -237,34 +226,6 @@ const AdminDashboard = () => {
                 </p>
                 <p className="text-xs text-neutral-500 mt-1">
                   {method.count} transacciones
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Productos Próximos a Vencer */}
-      {alerts.nearExpiry.length > 0 && (
-        <div className="bg-white rounded-xl shadow-card p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-danger-600">
-              ⚠️ Productos Próximos a Vencer
-            </h3>
-            <Link to="/dashboard/alertas" className="text-sm text-danger-600 hover:text-danger-700">
-              Ver todos →
-            </Link>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {alerts.nearExpiry.slice(0, 3).map((batch) => (
-              <div key={batch.id} className="p-4 bg-danger-50 border border-danger-200 rounded-lg">
-                <p className="font-medium">{batch.product?.name || 'Producto'}</p>
-                <p className="text-sm text-neutral-600 mt-1">Lote: {batch.batchNumber}</p>
-                <p className="text-sm text-danger-600 font-semibold mt-2">
-                  Vence: {formatDate(batch.expirationDate)}
-                </p>
-                <p className="text-xs text-neutral-500 mt-1">
-                  Cantidad: {batch.currentQuantity} unidades
                 </p>
               </div>
             ))}
