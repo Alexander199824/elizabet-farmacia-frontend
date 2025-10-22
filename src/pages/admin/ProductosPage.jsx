@@ -28,6 +28,21 @@ const ProductosPage = () => {
   });
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [showFormModal, setShowFormModal] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    sku: '',
+    category: '',
+    presentation: '',
+    price: '',
+    costPrice: '',
+    stock: '',
+    minStock: '',
+    description: '',
+    imageUrl: '',
+    isActive: true
+  });
 
   useEffect(() => {
     fetchProducts();
@@ -77,6 +92,85 @@ const ProductosPage = () => {
     }
   };
 
+  const handleOpenCreateModal = () => {
+    setEditMode(false);
+    setFormData({
+      name: '',
+      sku: '',
+      category: '',
+      presentation: '',
+      price: '',
+      costPrice: '',
+      stock: '',
+      minStock: '',
+      description: '',
+      imageUrl: '',
+      isActive: true
+    });
+    setShowFormModal(true);
+  };
+
+  const handleOpenEditModal = (product) => {
+    setEditMode(true);
+    setFormData({
+      name: product.name || '',
+      sku: product.sku || '',
+      category: product.category || '',
+      presentation: product.presentation || '',
+      price: product.price || '',
+      costPrice: product.costPrice || '',
+      stock: product.stock || '',
+      minStock: product.minStock || '',
+      description: product.description || '',
+      imageUrl: product.imageUrl || '',
+      isActive: product.isActive !== undefined ? product.isActive : true
+    });
+    setSelectedProduct(product);
+    setShowFormModal(true);
+  };
+
+  const handleFormChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      // Validar campos requeridos
+      if (!formData.name || !formData.sku || !formData.category || !formData.price) {
+        toast.error('Por favor completa todos los campos requeridos');
+        return;
+      }
+
+      const productData = {
+        ...formData,
+        price: parseFloat(formData.price),
+        costPrice: parseFloat(formData.costPrice) || 0,
+        stock: parseInt(formData.stock) || 0,
+        minStock: parseInt(formData.minStock) || 0
+      };
+
+      if (editMode) {
+        await productService.updateProduct(selectedProduct.id, productData);
+        toast.success('Producto actualizado exitosamente');
+      } else {
+        await productService.createProduct(productData);
+        toast.success('Producto creado exitosamente');
+      }
+
+      setShowFormModal(false);
+      fetchProducts();
+    } catch (error) {
+      console.error('Error saving product:', error);
+      toast.error(error.message || 'Error al guardar el producto');
+    }
+  };
+
   const handlePageChange = (newPage) => {
     if (newPage < 1 || newPage > pagination.totalPages) return;
     setPagination(prev => ({ ...prev, page: newPage }));
@@ -104,7 +198,10 @@ const ProductosPage = () => {
             Administra el catálogo de productos
           </p>
         </div>
-        <button className="btn-primary flex items-center space-x-2">
+        <button
+          onClick={handleOpenCreateModal}
+          className="btn-primary flex items-center space-x-2"
+        >
           <FiPlus />
           <span>Nuevo Producto</span>
         </button>
@@ -294,6 +391,7 @@ const ProductosPage = () => {
                           <FiEye />
                         </button>
                         <button
+                          onClick={() => handleOpenEditModal(product)}
                           className="p-2 text-success-600 hover:bg-success-50 rounded"
                           title="Editar"
                         >
@@ -424,6 +522,226 @@ const ProductosPage = () => {
                 </div>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Formulario Crear/Editar */}
+      {showFormModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b flex items-center justify-between sticky top-0 bg-white z-10">
+              <h3 className="text-xl font-semibold">
+                {editMode ? 'Editar Producto' : 'Nuevo Producto'}
+              </h3>
+              <button
+                onClick={() => setShowFormModal(false)}
+                className="text-neutral-400 hover:text-neutral-600"
+              >
+                ✕
+              </button>
+            </div>
+            <form onSubmit={handleSubmit} className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Nombre */}
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    Nombre del Producto <span className="text-danger-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleFormChange}
+                    required
+                    className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    placeholder="Ej: Paracetamol 500mg"
+                  />
+                </div>
+
+                {/* SKU */}
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    SKU <span className="text-danger-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="sku"
+                    value={formData.sku}
+                    onChange={handleFormChange}
+                    required
+                    className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    placeholder="Ej: MED-001"
+                  />
+                </div>
+
+                {/* Categoría */}
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    Categoría <span className="text-danger-500">*</span>
+                  </label>
+                  <select
+                    name="category"
+                    value={formData.category}
+                    onChange={handleFormChange}
+                    required
+                    className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  >
+                    <option value="">Seleccionar categoría</option>
+                    <option value="medicamento">Medicamento</option>
+                    <option value="vitamina">Vitamina</option>
+                    <option value="suplemento">Suplemento</option>
+                    <option value="cuidado_personal">Cuidado Personal</option>
+                    <option value="otro">Otro</option>
+                  </select>
+                </div>
+
+                {/* Presentación */}
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    Presentación
+                  </label>
+                  <input
+                    type="text"
+                    name="presentation"
+                    value={formData.presentation}
+                    onChange={handleFormChange}
+                    className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    placeholder="Ej: Caja x 20 tabletas"
+                  />
+                </div>
+
+                {/* Precio de Venta */}
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    Precio de Venta <span className="text-danger-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    name="price"
+                    value={formData.price}
+                    onChange={handleFormChange}
+                    required
+                    step="0.01"
+                    min="0"
+                    className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    placeholder="0.00"
+                  />
+                </div>
+
+                {/* Precio de Costo */}
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    Precio de Costo
+                  </label>
+                  <input
+                    type="number"
+                    name="costPrice"
+                    value={formData.costPrice}
+                    onChange={handleFormChange}
+                    step="0.01"
+                    min="0"
+                    className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    placeholder="0.00"
+                  />
+                </div>
+
+                {/* Stock Actual */}
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    Stock Actual
+                  </label>
+                  <input
+                    type="number"
+                    name="stock"
+                    value={formData.stock}
+                    onChange={handleFormChange}
+                    min="0"
+                    className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    placeholder="0"
+                  />
+                </div>
+
+                {/* Stock Mínimo */}
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    Stock Mínimo
+                  </label>
+                  <input
+                    type="number"
+                    name="minStock"
+                    value={formData.minStock}
+                    onChange={handleFormChange}
+                    min="0"
+                    className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    placeholder="0"
+                  />
+                </div>
+
+                {/* URL de Imagen */}
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    URL de Imagen
+                  </label>
+                  <input
+                    type="url"
+                    name="imageUrl"
+                    value={formData.imageUrl}
+                    onChange={handleFormChange}
+                    className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    placeholder="https://ejemplo.com/imagen.jpg"
+                  />
+                </div>
+
+                {/* Descripción */}
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    Descripción
+                  </label>
+                  <textarea
+                    name="description"
+                    value={formData.description}
+                    onChange={handleFormChange}
+                    rows="3"
+                    className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    placeholder="Descripción del producto..."
+                  />
+                </div>
+
+                {/* Estado Activo */}
+                <div className="md:col-span-2">
+                  <label className="flex items-center space-x-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="isActive"
+                      checked={formData.isActive}
+                      onChange={handleFormChange}
+                      className="rounded text-primary-600 focus:ring-primary-500"
+                    />
+                    <span className="text-sm font-medium text-neutral-700">
+                      Producto Activo
+                    </span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Botones de Acción */}
+              <div className="flex justify-end space-x-3 mt-6 pt-6 border-t">
+                <button
+                  type="button"
+                  onClick={() => setShowFormModal(false)}
+                  className="px-4 py-2 border border-neutral-300 rounded-lg text-neutral-700 hover:bg-neutral-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="btn-primary px-6 py-2"
+                >
+                  {editMode ? 'Actualizar' : 'Crear'} Producto
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
