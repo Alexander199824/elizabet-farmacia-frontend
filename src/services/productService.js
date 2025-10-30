@@ -72,21 +72,65 @@ const productService = {
     }
   },
 
-  // Crear producto
+  // Crear producto (con soporte para imagen)
   createProduct: async (productData) => {
     try {
-      const response = await api.post('/products', productData);
-      return response.data;
+      // Si hay una imagen (File object), usar FormData
+      if (productData.image && productData.image instanceof File) {
+        const formData = new FormData();
+
+        // Agregar todos los campos al FormData
+        Object.keys(productData).forEach(key => {
+          if (key === 'image') {
+            formData.append('image', productData.image);
+          } else {
+            formData.append(key, productData[key]);
+          }
+        });
+
+        const response = await api.post('/products', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          }
+        });
+        return response.data;
+      } else {
+        // Sin imagen, enviar JSON normal
+        const response = await api.post('/products', productData);
+        return response.data;
+      }
     } catch (error) {
       throw error.response?.data || error.message;
     }
   },
 
-  // Actualizar producto
+  // Actualizar producto (con soporte para imagen)
   updateProduct: async (id, productData) => {
     try {
-      const response = await api.put(`/products/${id}`, productData);
-      return response.data;
+      // Si hay una imagen nueva (File object), usar FormData
+      if (productData.image && productData.image instanceof File) {
+        const formData = new FormData();
+
+        // Agregar todos los campos al FormData
+        Object.keys(productData).forEach(key => {
+          if (key === 'image') {
+            formData.append('image', productData.image);
+          } else {
+            formData.append(key, productData[key]);
+          }
+        });
+
+        const response = await api.put(`/products/${id}`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          }
+        });
+        return response.data;
+      } else {
+        // Sin imagen nueva, enviar JSON normal
+        const response = await api.put(`/products/${id}`, productData);
+        return response.data;
+      }
     } catch (error) {
       throw error.response?.data || error.message;
     }

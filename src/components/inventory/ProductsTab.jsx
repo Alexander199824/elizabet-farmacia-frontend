@@ -1,17 +1,17 @@
 /**
  * @author Alexander Echeverria
- * @file ProductosPage.jsx
- * @description Página completa de gestión de productos con CRUD
- * @location /src/pages/admin/ProductosPage.jsx
+ * @file ProductsTab.jsx
+ * @description Tab de gestión de productos con CRUD completo (Imagen + SKU Auto)
+ * @location /src/components/inventory/ProductsTab.jsx
  */
 
 import { useState, useEffect } from 'react';
-import { FiSearch, FiPlus, FiEdit2, FiTrash2, FiEye, FiFilter, FiDownload, FiInfo } from 'react-icons/fi';
+import { FiSearch, FiPlus, FiEdit2, FiTrash2, FiEye, FiInfo, FiBox } from 'react-icons/fi';
 import productService from '../../services/productService';
 import { formatCurrency } from '../../utils/helpers';
 import toast from 'react-hot-toast';
 
-const ProductosPage = () => {
+const ProductsTab = ({ onRefresh }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -51,6 +51,18 @@ const ProductosPage = () => {
   useEffect(() => {
     fetchProducts();
   }, [pagination.page, filters]);
+
+  // Debounce para búsqueda en tiempo real
+  useEffect(() => {
+    const delaySearch = setTimeout(() => {
+      if (searchTerm !== undefined) {
+        setPagination(prev => ({ ...prev, page: 1 }));
+        fetchProducts();
+      }
+    }, 500); // Espera 500ms después de que el usuario deje de escribir
+
+    return () => clearTimeout(delaySearch);
+  }, [searchTerm]);
 
   // Generar SKU automáticamente cuando cambian los campos relevantes
   useEffect(() => {
@@ -105,6 +117,7 @@ const ProductosPage = () => {
       await productService.deleteProduct(productId);
       toast.success('Producto eliminado exitosamente');
       fetchProducts();
+      if (onRefresh) onRefresh(); // Notificar al padre
     } catch (error) {
       toast.error('Error al eliminar producto');
     }
@@ -290,6 +303,7 @@ const ProductosPage = () => {
 
       setShowFormModal(false);
       fetchProducts();
+      if (onRefresh) onRefresh(); // Notificar al padre para actualizar stats
     } catch (error) {
       console.error('Error saving product:', error);
       toast.error(error.message || 'Error al guardar el producto');
@@ -312,15 +326,15 @@ const ProductosPage = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 p-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-display font-bold text-neutral-900">
-            Gestión de Productos
-          </h1>
-          <p className="text-neutral-600 mt-1">
-            Administra el catálogo de productos
+          <h2 className="text-xl font-semibold text-neutral-900">
+            Catálogo de Productos
+          </h2>
+          <p className="text-sm text-neutral-600 mt-1">
+            Gestiona productos con imagen y SKU automático
           </p>
         </div>
         <button
@@ -333,7 +347,7 @@ const ProductosPage = () => {
       </div>
 
       {/* Filters and Search */}
-      <div className="bg-white rounded-xl shadow-card p-6">
+      <div className="bg-neutral-50 rounded-lg p-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Search */}
           <form onSubmit={handleSearch} className="md:col-span-2">
@@ -1008,4 +1022,4 @@ const ProductosPage = () => {
   );
 };
 
-export default ProductosPage;
+export default ProductsTab;

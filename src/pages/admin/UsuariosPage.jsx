@@ -48,15 +48,30 @@ const UsuariosPage = () => {
     fetchStats();
   }, [pagination.page, filters]);
 
+  // Debounce para búsqueda en tiempo real
+  useEffect(() => {
+    const delaySearch = setTimeout(() => {
+      if (searchTerm !== undefined) {
+        setPagination(prev => ({ ...prev, page: 1 }));
+        fetchUsers();
+      }
+    }, 500);
+
+    return () => clearTimeout(delaySearch);
+  }, [searchTerm]);
+
   const fetchUsers = async () => {
     setLoading(true);
     try {
       const params = {
         page: pagination.page,
         limit: pagination.limit,
-        search: searchTerm,
-        ...filters
       };
+
+      // Solo agregar parámetros si tienen valor
+      if (searchTerm) params.search = searchTerm;
+      if (filters.role) params.role = filters.role;
+      if (filters.isActive !== '') params.isActive = filters.isActive;
 
       const response = await userService.getAllUsers(params);
       

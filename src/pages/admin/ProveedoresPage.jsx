@@ -47,15 +47,29 @@ const ProveedoresPage = () => {
     fetchSuppliers();
   }, [pagination.page, filters]);
 
+  // Debounce para búsqueda en tiempo real
+  useEffect(() => {
+    const delaySearch = setTimeout(() => {
+      if (searchTerm !== undefined) {
+        setPagination(prev => ({ ...prev, page: 1 }));
+        fetchSuppliers();
+      }
+    }, 500);
+
+    return () => clearTimeout(delaySearch);
+  }, [searchTerm]);
+
   const fetchSuppliers = async () => {
     setLoading(true);
     try {
       const params = {
         page: pagination.page,
         limit: pagination.limit,
-        search: searchTerm,
-        ...filters
       };
+
+      // Solo agregar parámetros si tienen valor
+      if (searchTerm) params.search = searchTerm;
+      if (filters.isActive !== '') params.isActive = filters.isActive;
 
       const response = await supplierService.getAllSuppliers(params);
       

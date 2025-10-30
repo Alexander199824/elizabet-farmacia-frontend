@@ -34,6 +34,7 @@ const AdminDashboard = () => {
     try {
       // 1. Obtener datos del dashboard principal
       const dashboardData = await statisticsService.getDashboard();
+      console.log('Dashboard Data:', dashboardData); // Debug: ver estructura de datos
       setDashboard(dashboardData);
 
       // 2. Obtener ventas recientes
@@ -132,7 +133,7 @@ const AdminDashboard = () => {
         <Link to="/dashboard/inventario" className="transform transition-all hover:scale-105">
           <StatCard
             title="Productos"
-            value={dashboard.inventory?.totalProducts || 0}
+            value={dashboard.inventory?.totalProducts || dashboard.products?.total || dashboard.totalProducts || 0}
             icon={FiPackage}
             color="primary"
             description="En catálogo"

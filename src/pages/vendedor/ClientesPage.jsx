@@ -29,14 +29,28 @@ const ClientesPage = () => {
     fetchClients();
   }, [pagination.page]);
 
+  // Debounce para búsqueda en tiempo real
+  useEffect(() => {
+    const delaySearch = setTimeout(() => {
+      if (searchTerm !== undefined) {
+        setPagination(prev => ({ ...prev, page: 1 }));
+        fetchClients();
+      }
+    }, 500);
+
+    return () => clearTimeout(delaySearch);
+  }, [searchTerm]);
+
   const fetchClients = async () => {
     setLoading(true);
     try {
       const params = {
         page: pagination.page,
         limit: pagination.limit,
-        search: searchTerm
       };
+
+      // Solo agregar parámetros si tienen valor
+      if (searchTerm) params.search = searchTerm;
 
       const response = await clientService.getAllClients(params);
       

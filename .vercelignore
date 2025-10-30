@@ -1,0 +1,19 @@
+# Tests
+tests/
+*.test.js
+*.spec.js
+
+# Documentation
+*.md
+!README.md
+
+# Development files
+.env.local
+.env.development.local
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~

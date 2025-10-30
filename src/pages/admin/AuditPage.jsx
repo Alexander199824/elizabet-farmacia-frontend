@@ -6,8 +6,8 @@
  */
 
 import { useState, useEffect } from 'react';
-import { 
-  FiSearch, FiFilter, FiDownload, FiEye, FiAlertCircle, 
+import {
+  FiSearch, FiFilter, FiDownload, FiEye, FiAlertCircle,
   FiActivity, FiUsers, FiDatabase, FiClock, FiCalendar
 } from 'react-icons/fi';
 import auditService from '../../services/auditService';
@@ -72,15 +72,35 @@ const AuditPage = () => {
     }
   }, [activeTab, pagination.page, filters]);
 
+  // Debounce para búsqueda en tiempo real
+  useEffect(() => {
+    if (activeTab === 'logs') {
+      const delaySearch = setTimeout(() => {
+        if (searchTerm !== undefined) {
+          setPagination(prev => ({ ...prev, page: 1 }));
+          fetchLogs();
+        }
+      }, 500);
+
+      return () => clearTimeout(delaySearch);
+    }
+  }, [searchTerm]);
+
   const fetchLogs = async () => {
     setLoading(true);
     try {
       const params = {
         page: pagination.page,
         limit: pagination.limit,
-        search: searchTerm,
-        ...filters
       };
+
+      // Solo agregar parámetros si tienen valor
+      if (searchTerm) params.search = searchTerm;
+      if (filters.action) params.action = filters.action;
+      if (filters.entity) params.entity = filters.entity;
+      if (filters.startDate) params.startDate = filters.startDate;
+      if (filters.endDate) params.endDate = filters.endDate;
+      if (filters.userId) params.userId = filters.userId;
 
       const response = await auditService.getAllLogs(params);
       
@@ -410,7 +430,10 @@ const AuditPage = () => {
                         Usuario
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
-                        Descripción
+                        Estado
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                        Severidad
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
                         IP
@@ -444,12 +467,22 @@ const AuditPage = () => {
                             {log.entity}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
-                            {log.user?.username || 'Sistema'}
+                            {log.user ? `${log.user.firstName} ${log.user.lastName}` : 'Sistema'}
                           </td>
-                          <td className="px-6 py-4 text-sm">
-                            <div className="max-w-xs truncate">
-                              {log.description}
-                            </div>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={log.status === 'success' ? 'badge-success' : 'badge-danger'}>
+                              {log.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={
+                              log.severity === 'critical' ? 'badge-danger' :
+                              log.severity === 'error' ? 'badge-danger' :
+                              log.severity === 'warning' ? 'badge-warning' :
+                              'badge'
+                            }>
+                              {log.severity}
+                            </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-500">
                             {log.ipAddress || 'N/A'}
@@ -544,11 +577,11 @@ const AuditPage = () => {
               </div>
 
               {/* Stats Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {/* By Action */}
                 <div className="bg-neutral-50 rounded-lg p-6">
                   <h3 className="text-lg font-semibold mb-4">
-                    Acciones
+                    Por Acción
                   </h3>
                   <div className="space-y-3">
                     {stats.byAction?.map((action) => (
@@ -564,20 +597,63 @@ const AuditPage = () => {
                   </div>
                 </div>
 
-                {/* Top Users */}
+                {/* By Severity */}
                 <div className="bg-neutral-50 rounded-lg p-6">
+                  <h3 className="text-lg font-semibold mb-4">
+                    Por Severidad
+                  </h3>
+                  <div className="space-y-3">
+                    {stats.bySeverity?.map((severity) => (
+                      <div key={severity.severity} className="flex items-center justify-between">
+                        <span className={
+                          severity.severity === 'critical' ? 'badge-danger' :
+                          severity.severity === 'error' ? 'badge-danger' :
+                          severity.severity === 'warning' ? 'badge-warning' :
+                          'badge'
+                        }>
+                          {severity.severity}
+                        </span>
+                        <span className="font-bold text-neutral-900">
+                          {severity.count}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* By Status */}
+                <div className="bg-neutral-50 rounded-lg p-6">
+                  <h3 className="text-lg font-semibold mb-4">
+                    Por Estado
+                  </h3>
+                  <div className="space-y-3">
+                    {stats.byStatus?.map((status) => (
+                      <div key={status.status} className="flex items-center justify-between">
+                        <span className={status.status === 'success' ? 'badge-success' : 'badge-danger'}>
+                          {status.status}
+                        </span>
+                        <span className="font-bold text-neutral-900">
+                          {status.count}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Top Users */}
+                <div className="bg-neutral-50 rounded-lg p-6 lg:col-span-3">
                   <h3 className="text-lg font-semibold mb-4">
                     Usuarios Más Activos
                   </h3>
-                  <div className="space-y-3">
-                    {stats.topUsers?.slice(0, 5).map((user, index) => (
-                      <div key={user.userId} className="flex items-center justify-between">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {stats.topUsers?.slice(0, 6).map((user, index) => (
+                      <div key={user.userId} className="flex items-center justify-between bg-white p-3 rounded">
                         <div className="flex items-center space-x-2">
                           <span className="w-6 h-6 bg-primary-100 rounded-full flex items-center justify-center text-primary-600 text-xs font-bold">
                             {index + 1}
                           </span>
-                          <span className="text-neutral-900">
-                            {user.user?.username || 'N/A'}
+                          <span className="text-neutral-900 text-sm">
+                            {user.user ? `${user.user.firstName} ${user.user.lastName}` : 'N/A'}
                           </span>
                         </div>
                         <span className="font-bold text-primary-600">
@@ -616,7 +692,9 @@ const AuditPage = () => {
                         </div>
                         <p className="text-sm text-neutral-700">{log.description}</p>
                         <div className="flex items-center space-x-4 mt-2 text-xs text-neutral-500">
-                          <span>Usuario: {log.user?.username || 'Sistema'}</span>
+                          <span>Usuario: {log.user ? `${log.user.firstName} ${log.user.lastName}` : 'Sistema'}</span>
+                          <span>Estado: {log.status}</span>
+                          <span>Severidad: {log.severity}</span>
                           <span>IP: {log.ipAddress || 'N/A'}</span>
                         </div>
                       </div>
@@ -677,7 +755,34 @@ const AuditPage = () => {
                 </div>
                 <div>
                   <p className="text-sm text-neutral-600">Usuario</p>
-                  <p className="font-semibold">{selectedLog.user?.username || 'Sistema'}</p>
+                  <p className="font-semibold">
+                    {selectedLog.user ? `${selectedLog.user.firstName} ${selectedLog.user.lastName}` : 'Sistema'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-neutral-600">Email</p>
+                  <p className="font-semibold">{selectedLog.user?.email || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-neutral-600">Role</p>
+                  <p className="font-semibold">{selectedLog.user?.role || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-neutral-600">Estado</p>
+                  <span className={selectedLog.status === 'success' ? 'badge-success' : 'badge-danger'}>
+                    {selectedLog.status}
+                  </span>
+                </div>
+                <div>
+                  <p className="text-sm text-neutral-600">Severidad</p>
+                  <span className={
+                    selectedLog.severity === 'critical' ? 'badge-danger' :
+                    selectedLog.severity === 'error' ? 'badge-danger' :
+                    selectedLog.severity === 'warning' ? 'badge-warning' :
+                    'badge'
+                  }>
+                    {selectedLog.severity}
+                  </span>
                 </div>
                 <div>
                   <p className="text-sm text-neutral-600">Fecha</p>
@@ -694,12 +799,46 @@ const AuditPage = () => {
                 <p className="text-neutral-900">{selectedLog.description}</p>
               </div>
 
+              {selectedLog.method && (
+                <div>
+                  <p className="text-sm text-neutral-600 mb-2">Método HTTP</p>
+                  <span className="badge">{selectedLog.method}</span>
+                </div>
+              )}
+
+              {selectedLog.endpoint && (
+                <div>
+                  <p className="text-sm text-neutral-600 mb-2">Endpoint</p>
+                  <p className="text-sm text-neutral-900 bg-neutral-50 p-2 rounded font-mono">
+                    {selectedLog.endpoint}
+                  </p>
+                </div>
+              )}
+
               {selectedLog.userAgent && (
                 <div>
                   <p className="text-sm text-neutral-600 mb-2">User Agent</p>
                   <p className="text-xs text-neutral-700 bg-neutral-50 p-2 rounded">
                     {selectedLog.userAgent}
                   </p>
+                </div>
+              )}
+
+              {selectedLog.changes && (
+                <div>
+                  <p className="text-sm text-neutral-600 mb-2">Cambios Registrados</p>
+                  <pre className="text-xs bg-neutral-50 p-4 rounded overflow-x-auto">
+                    {JSON.stringify(selectedLog.changes, null, 2)}
+                  </pre>
+                </div>
+              )}
+
+              {selectedLog.metadata && (
+                <div>
+                  <p className="text-sm text-neutral-600 mb-2">Metadata</p>
+                  <pre className="text-xs bg-neutral-50 p-4 rounded overflow-x-auto">
+                    {JSON.stringify(selectedLog.metadata, null, 2)}
+                  </pre>
                 </div>
               )}
 

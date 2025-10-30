@@ -160,6 +160,75 @@ const auditService = {
     } catch (error) {
       throw error.response?.data || error.message;
     }
+  },
+
+  // ========== TRAZABILIDAD ==========
+
+  /**
+   * ¿Quién creó este elemento?
+   */
+  whoCreated: async (entity, entityId) => {
+    try {
+      const logs = await auditService.getLogsByEntity(entity, entityId);
+      return logs.find(log => log.action === 'CREATE') || null;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  /**
+   * ¿Quién modificó este elemento?
+   */
+  whoModified: async (entity, entityId, limit = 10) => {
+    try {
+      const logs = await auditService.getLogsByEntity(entity, entityId, { limit });
+      return logs.filter(log => log.action === 'UPDATE');
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  /**
+   * ¿Quién eliminó este elemento?
+   */
+  whoDeleted: async (entity, entityId) => {
+    try {
+      const logs = await auditService.getLogsByEntity(entity, entityId);
+      return logs.find(log => log.action === 'DELETE') || null;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  /**
+   * Obtener historial completo de un elemento
+   */
+  getCompleteHistory: async (entity, entityId) => {
+    try {
+      const logs = await auditService.getLogsByEntity(entity, entityId);
+      return {
+        logs,
+        creation: logs.find(log => log.action === 'CREATE'),
+        updates: logs.filter(log => log.action === 'UPDATE'),
+        deletion: logs.find(log => log.action === 'DELETE')
+      };
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // ========== MANTENIMIENTO ==========
+
+  /**
+   * Limpiar logs antiguos (solo ADMIN)
+   */
+  cleanOldLogs: async (days = 90) => {
+    try {
+      const response = await axios.delete(`${API_URL}/audit/clean`, { data: { days } });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
   }
 };
 

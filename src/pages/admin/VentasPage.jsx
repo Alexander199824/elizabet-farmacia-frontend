@@ -64,15 +64,32 @@ const VentasPage = () => {
     fetchStats();
   }, [pagination.page, filters]);
 
+  // Debounce para búsqueda en tiempo real
+  useEffect(() => {
+    const delaySearch = setTimeout(() => {
+      if (searchTerm !== undefined) {
+        setPagination(prev => ({ ...prev, page: 1 }));
+        fetchSales();
+      }
+    }, 500);
+
+    return () => clearTimeout(delaySearch);
+  }, [searchTerm]);
+
   const fetchSales = async () => {
     setLoading(true);
     try {
       const params = {
         page: pagination.page,
         limit: pagination.limit,
-        search: searchTerm,
-        ...filters
       };
+
+      // Solo agregar parámetros si tienen valor
+      if (searchTerm) params.search = searchTerm;
+      if (filters.status) params.status = filters.status;
+      if (filters.paymentMethod) params.paymentMethod = filters.paymentMethod;
+      if (filters.startDate) params.startDate = filters.startDate;
+      if (filters.endDate) params.endDate = filters.endDate;
 
       const response = await invoiceService.getAllInvoices(params);
       
