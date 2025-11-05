@@ -5,20 +5,28 @@
  * @location /src/components/products/ProductCard.jsx
  */
 
-import { FiShoppingCart, FiHeart } from 'react-icons/fi';
+import { FiShoppingCart, FiHeart, FiEye } from 'react-icons/fi';
+import { useState } from 'react';
 import { useCart } from '../../context/CartContext';
 import { formatCurrency } from '../../utils/helpers';
 import toast from 'react-hot-toast';
+import ProductModal from './ProductModal';
 
 const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
+  const [showModal, setShowModal] = useState(false);
 
-  const handleAddToCart = () => {
+  const handleAddToCart = (e) => {
+    e.stopPropagation();
     if (product.stock <= 0) {
       toast.error('Producto agotado');
       return;
     }
     addToCart(product);
+  };
+
+  const handleCardClick = () => {
+    setShowModal(true);
   };
 
   const getStockBadge = () => {
@@ -32,7 +40,8 @@ const ProductCard = ({ product }) => {
   };
 
   return (
-    <div className="card-hover group">
+    <>
+      <div className="card-hover group cursor-pointer h-full flex flex-col" onClick={handleCardClick}>
       {/* Imagen */}
       <div className="relative overflow-hidden rounded-lg mb-4 bg-neutral-100">
         <img
@@ -63,7 +72,7 @@ const ProductCard = ({ product }) => {
       </div>
 
       {/* Información del producto */}
-      <div className="space-y-2">
+      <div className="space-y-2 flex-1 flex flex-col">
         {/* Categoría */}
         {product.category && (
           <span className="text-xs text-primary-600 font-medium uppercase">
@@ -88,24 +97,38 @@ const ProductCard = ({ product }) => {
           </p>
         )}
 
-        {/* Precio y acciones */}
-        <div className="flex items-center justify-between pt-3 border-t">
-          <div>
-            <p className="text-2xl font-bold text-primary-600">
-              {formatCurrency(product.price)}
+        {/* Espaciador flexible */}
+        <div className="flex-1"></div>
+
+        {/* Receta médica requerida */}
+        {product.requiresPrescription && (
+          <div className="p-2 bg-danger-50 border border-danger-200 rounded-lg">
+            <p className="text-xs text-danger-600 font-medium text-center">
+              ⚕️ Requiere receta médica
             </p>
-            {product.costPrice && (
-              <p className="text-xs text-neutral-400 line-through">
-                {formatCurrency(product.costPrice)}
+          </div>
+        )}
+
+        {/* Precio y acciones */}
+        <div className="space-y-3 pt-3 border-t mt-auto">
+          <div className="flex items-end justify-between">
+            <div>
+              <p className="text-2xl font-bold text-primary-600">
+                {formatCurrency(product.price)}
               </p>
-            )}
+              {product.costPrice && product.costPrice !== product.price && (
+                <p className="text-xs text-neutral-400 line-through">
+                  {formatCurrency(product.costPrice)}
+                </p>
+              )}
+            </div>
           </div>
 
           <button
             onClick={handleAddToCart}
             disabled={product.stock <= 0}
             className={`
-              p-3 rounded-lg transition-all duration-200 flex items-center space-x-2
+              w-full py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 font-medium
               ${product.stock > 0
                 ? 'bg-success-500 text-white hover:bg-success-600 hover:shadow-lg'
                 : 'bg-neutral-300 text-neutral-500 cursor-not-allowed'
@@ -113,20 +136,18 @@ const ProductCard = ({ product }) => {
             `}
           >
             <FiShoppingCart className="text-lg" />
-            <span className="hidden sm:inline font-medium">Agregar</span>
+            <span>Agregar</span>
           </button>
         </div>
-
-        {/* Receta médica requerida */}
-        {product.requiresPrescription && (
-          <div className="mt-2 p-2 bg-danger-50 border border-danger-200 rounded-lg">
-            <p className="text-xs text-danger-600 font-medium text-center">
-              ⚕️ Requiere receta médica
-            </p>
-          </div>
-        )}
       </div>
     </div>
+
+    <ProductModal
+      product={product}
+      isOpen={showModal}
+      onClose={() => setShowModal(false)}
+    />
+    </>
   );
 };
 

@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { FiSearch, FiTruck, FiShield, FiClock, FiAward } from 'react-icons/fi';
+import { FiSearch, FiTruck, FiPackage, FiHeart } from 'react-icons/fi';
 import ProductGrid from '../../components/products/ProductGrid';
 import ProductFilters from '../../components/products/ProductFilters';
 import productService from '../../services/productService';
@@ -115,34 +115,27 @@ const Home = () => {
 
       <section className="py-12 bg-white border-b">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             <div className="text-center">
               <div className="w-16 h-16 mx-auto mb-4 bg-primary-100 rounded-full flex items-center justify-center">
                 <FiTruck className="text-3xl text-primary-600" />
               </div>
               <h3 className="font-semibold mb-2">Envio Rapido</h3>
-              <p className="text-sm text-neutral-600">Entrega en 24-48 horas</p>
+              <p className="text-sm text-neutral-600">Entrega de 1 a 3 horas</p>
             </div>
             <div className="text-center">
               <div className="w-16 h-16 mx-auto mb-4 bg-success-100 rounded-full flex items-center justify-center">
-                <FiShield className="text-3xl text-success-600" />
+                <FiHeart className="text-3xl text-success-600" />
               </div>
-              <h3 className="font-semibold mb-2">Productos Certificados</h3>
-              <p className="text-sm text-neutral-600">100% originales</p>
+              <h3 className="font-semibold mb-2">Atención Médica</h3>
+              <p className="text-sm text-neutral-600">Consultas en clínica</p>
             </div>
             <div className="text-center">
               <div className="w-16 h-16 mx-auto mb-4 bg-primary-100 rounded-full flex items-center justify-center">
-                <FiClock className="text-3xl text-primary-600" />
+                <FiPackage className="text-3xl text-primary-600" />
               </div>
-              <h3 className="font-semibold mb-2">Atencion Continua</h3>
-              <p className="text-sm text-neutral-600">Siempre disponibles</p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 bg-success-100 rounded-full flex items-center justify-center">
-                <FiAward className="text-3xl text-success-600" />
-              </div>
-              <h3 className="font-semibold mb-2">Calidad Garantizada</h3>
-              <p className="text-sm text-neutral-600">Primera calidad</p>
+              <h3 className="font-semibold mb-2">Recoge en Tienda</h3>
+              <p className="text-sm text-neutral-600">Pasa a recoger tu pedido</p>
             </div>
           </div>
         </div>

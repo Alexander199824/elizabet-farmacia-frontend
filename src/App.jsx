@@ -23,6 +23,8 @@ import DashboardLayout from './layouts/DashboardLayout';
 import Home from './pages/public/Home';
 import Login from './pages/public/Login';
 import Register from './pages/public/Register';
+import Checkout from './pages/public/Checkout';
+import OrderConfirmation from './pages/public/OrderConfirmation';
 
 // Dashboard Pages por Rol
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -112,6 +114,22 @@ function AppContent() {
         />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route
+          path="/checkout"
+          element={
+            <PublicLayout>
+              <Checkout />
+            </PublicLayout>
+          }
+        />
+        <Route
+          path="/pedido-confirmado"
+          element={
+            <PublicLayout>
+              <OrderConfirmation />
+            </PublicLayout>
+          }
+        />
 
         {/* ========== DASHBOARD PRINCIPAL ========== */}
         <Route

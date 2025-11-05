@@ -31,10 +31,15 @@ export const PRODUCT_CATEGORIES = [
 ];
 
 export const PAYMENT_METHODS = [
-  { value: 'efectivo', label: 'Efectivo' },
-  { value: 'tarjeta', label: 'Tarjeta' },
-  { value: 'transferencia', label: 'Transferencia' },
-  { value: 'credito', label: 'Crédito' },
+  { value: 'efectivo', label: 'Efectivo (Contra entrega)' },
+];
+
+export const DELIVERY_ZONES = [
+  { value: 'zona1', label: 'Zona 1 -', cost: 5 },
+  { value: 'zona2', label: 'Zona 2 - ', cost: 5 },
+  { value: 'zona3', label: 'Zona 3 - ', cost: 5 },
+  { value: 'zona4', label: 'Zona 4 - ', cost: 5 },
+  { value: 'pickup', label: 'Recoger en tienda', cost: 0 },
 ];
 
 export const INVOICE_STATUS = {
